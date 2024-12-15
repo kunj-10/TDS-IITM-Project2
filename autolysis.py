@@ -9,8 +9,7 @@
 #   "numpy",
 #   "scikit-learn",
 #   "charset_normalizer",
-#   "requests",
-#   "ipykernel"
+#   "requests"
 # ]
 # ///
 
@@ -67,7 +66,7 @@ def make_corr_heatmap(df, filename):
     plt.yticks(fontsize=10, rotation=0)     
     plt.title(f"Heatmap for {"".join(filename.split('.')[:-1])}")
     count_images += 1
-    plt.savefig(f"corr_heatmap.png", dpi=300, bbox_inches="tight")
+    plt.savefig(f"{"".join(filename.split('.')[:-1])}_corr_heatmap.png", dpi=300, bbox_inches="tight")
     plt.close()
     print("Saved Correlation Heatmap", count_images)
 
@@ -96,6 +95,7 @@ def perform_kmeans_clustering(df, filename, n_clusters=3):
         plt.ylabel(features.columns[1])
         plt.title('Clusters')
         plt.savefig(f"{"".join(filename.split('.')[:-1])}_Clusters.png", dpi=300, bbox_inches="tight")
+        plt.close()
         img_made = True
         count_images += 1   
         print("Saved Kmeans Cluster", count_images)
@@ -144,6 +144,7 @@ def histogram_generate(df, filename):
     plt.grid(True)
     count_images += 1
     plt.savefig(f"{"".join(filename.split('.')[:-1])}_{'_'.join(best_column.split())}_distribution.png", dpi=300, bbox_inches="tight")
+    plt.close()
     print("Saved Histogram", count_images)
     return best_column
 
@@ -181,6 +182,7 @@ def plot_pie_chart_without_labels_for_small_categories(df, filename, column, thr
     plt.title(f'Distribution of {column}')
     plt.ylabel('')  # Hide the y-label for a cleaner pie chart
     plt.savefig(f"{"".join(filename.split('.')[:-1])}_{'_'.join(column.split())}_pie_chart.png", dpi=300, bbox_inches="tight")
+    plt.close()
     count_images += 1
     print("Saved Pie Chart", count_images)
     return column
@@ -316,7 +318,6 @@ This analysis will also provide insights into missing data, trends in the numeri
 
         # Correlation Heatmap
         if corr:
-            make_corr_heatmap(df, filename)
             lines_to_write.append("### Correlation Heatmap for the Numerical Data:")
             lines_to_write.append("A correlation heatmap was generated to visualize the relationships between numerical features in the dataset.\n")
             heatmap_path =f"{"".join(filename.split('.')[:-1])}_corr_heatmap.png"
@@ -324,21 +325,18 @@ This analysis will also provide insights into missing data, trends in the numeri
         
         # Histogram
         if histogram_column:
-            histogram_generate(df, filename)
             lines_to_write.append(f"\n### Distribution for '{histogram_column}' Column of Dataset: \n")
             dist_path = f"{"".join(filename.split('.')[:-1])}_{'_'.join(histogram_column.split())}_distribution.png"
             lines_to_write.append(f"![{histogram_column} distribution]({dist_path})")
         
         # Piechart
         if piechart_column:
-            plot_categorical_pie_chart(df, filename)
             lines_to_write.append(f"\n### Pie-Chart for '{piechart_column}' Column of Dataset: \n")
             dist_path = f"{"".join(filename.split('.')[:-1])}_{'_'.join(piechart_column.split())}_pie_chart.png"
             lines_to_write.append(f"![{piechart_column} Pie Chart]({dist_path})")
 
         # Kmeans Cluster
         if kmeans_image:
-            perform_kmeans_clustering(df, filename)
             lines_to_write.append(f"\n### Kmeans cluster for Dataset:")
             lines_to_write.append(analysis_text_kmeans+'\n')
             dist_path = f"{"".join(filename.split('.')[:-1])}_Clusters.png"
@@ -385,7 +383,6 @@ if __name__ == "__main__":
 
     # Narrations
     narration = get_narration(data_analysis, cluster_centers, corr, df.shape)
-    # narration = ""
 
     writeReadme(df, filename, data_analysis, corr, histogram_column, piechart_column, kmeans_image, narration)
 
