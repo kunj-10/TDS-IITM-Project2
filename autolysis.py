@@ -377,6 +377,7 @@ if __name__ == "__main__":
 
     # Narrations
     # narration = get_narration(data_analysis, cluster_centers, corr, df.shape)
+    narration = ""
 
     writeReadme(df, filename, data_analysis, corr, histogram_column, piechart_column, kmeans_image, narration)
 
