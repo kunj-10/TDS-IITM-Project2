@@ -30,7 +30,16 @@ import requests
 
 
 
-def check_ai_proxy_token():
+def check_ai_proxy_token()->str:
+    """
+    Checks for the presence of the AIPROXY_TOKEN environment variable.
+
+    If the AIPROXY_TOKEN is not set, an error message is displayed, 
+    and the program exits. If found, the token is printed and returned.
+
+    Returns:
+        str: The value of the AIPROXY_TOKEN environment variable.
+    """
     token = os.getenv("AIPROXY_TOKEN")
     if not token:
         print("Error: AIPROXY_TOKEN environment variable not set.")
@@ -38,7 +47,21 @@ def check_ai_proxy_token():
     print("AI Proxy token found.", token)
     return token
 
-def load_csv():
+def load_csv()->pd.DataFrame:
+    """
+    Loads a CSV file into a pandas DataFrame.
+
+    Attempts to read the CSV file specified by the global variable `filename`. 
+    If successful, prints the number of rows and columns in the DataFrame and 
+    returns it. If an error occurs during loading, the error message is printed, 
+    and the program exits.
+
+    Returns:
+        pandas.DataFrame: The loaded DataFrame.
+
+    Raises:
+        SystemExit: If an error occurs while loading the CSV file.
+    """
     try:
         df = pd.read_csv(filename)
         print(f"Successfully loaded {filename} with {df.shape[0]} rows and {df.shape[1]} columns.")
@@ -47,7 +70,22 @@ def load_csv():
         print(f"Error loading {filename}: {e}")
         sys.exit(1)
 
-def explore_data_generic(df):
+def explore_data(df: pd.date_range)->dict:
+    """
+    Performs a detailed indepth exploration of the given dataset.
+
+    This function analyzes the DataFrame to provide:
+    - Column names with their data types.
+    - Descriptive statistics for numerical columns.
+    - Counts of missing values in each column.
+
+    Args:
+        df (pd.DataFrame): The DataFrame to analyze.
+
+    Returns:
+        dict: A dictionary summarizing data types, descriptive statistics, 
+        and missing values for the dataset.
+    """
     data_analysis = {
         "Columns and respective dtypes in dataset": df.dtypes.apply(str).to_dict(),
         "Mathematical Description done using pandas dataframe.describe(): ": df.describe().to_dict(),
@@ -55,8 +93,23 @@ def explore_data_generic(df):
     }
     return data_analysis
 
-def make_corr_heatmap(df, filename):
-    global count_images
+def make_corr_heatmap(df:pd.DataFrame, count_images)->tuple:
+    """
+    Generates and saves a correlation heatmap for numerical features in the DataFrame.
+
+    This function selects all numerical columns from the DataFrame, calculates their 
+    correlation matrix, and creates a heatmap visualization. The heatmap is saved as 
+    an image file in the current working directory. If no numerical columns are present, 
+    the function exits without generating the heatmap.
+
+    Args:
+        df (pd.DataFrame): The input DataFrame containing data to analyze.
+        count_images (int): A counter to track the number of saved images.
+
+    Returns:
+        dict: The correlation matrix represented as a dictionary. If no numerical columns 
+        are found, returns None.
+    """
     features = df.select_dtypes(include=[np.number]) 
     if features.empty:
         print("No Numerical columns found for Correlation Heatmap")
@@ -65,16 +118,39 @@ def make_corr_heatmap(df, filename):
     sns.heatmap(corr, annot=True, annot_kws={"size": 5}, cmap="coolwarm", fmt='.2f')
     plt.xticks(fontsize=10, rotation=45, ha='right')  
     plt.yticks(fontsize=10, rotation=0)     
-    plt.title(f"Heatmap for {"".join(filename.split('.')[:-1])}")
+    plt.title(f"Correlation Heatmap")
     count_images += 1
     plt.savefig(f"corr_heatmap.png", dpi=300, bbox_inches="tight")
     plt.close()
     print("Saved Correlation Heatmap", count_images)
 
-    return corr.to_dict()
+    return corr.to_dict(), count_images
 
-def perform_kmeans_clustering(df, filename, n_clusters=3):
-    global count_images
+def perform_kmeans_clustering(df:pd.DataFrame, count_images:int, n_clusters:int = 3)->tuple:
+    """
+    Performs KMeans clustering on the numerical features of the provided DataFrame and generates a clustering plot.
+
+    This function first selects numerical features from the DataFrame, handles missing values by imputing 
+    them with the mean, scales the data, and applies KMeans clustering to segment the data into a specified 
+    number of clusters. If the number of clusters is less than or equal to 3, it generates and saves a 
+    scatter plot visualizing the clustering result.
+
+    Args:
+        df (pd.DataFrame): The input DataFrame containing data to be clustered.
+        count_images (int): A counter to track the number of saved images.
+        n_clusters (int, optional): The number of clusters to form. Defaults to 3.
+
+    Returns:
+        tuple: A tuple containing:
+            - df (pd.DataFrame): The original DataFrame with an added 'Cluster' column, indicating the assigned cluster.
+            - cluster_centers (dict): A dictionary representing the centroids of each cluster.
+            - analysis_text (str): A descriptive analysis of the clustering result.
+            - img_made (bool): A flag indicating if the clustering plot was generated and saved.
+
+    Notes:
+        - The function assumes that the DataFrame contains numerical columns for clustering.
+        - The plot generated is saved as "Clusters.png" if the number of images saved is less than 3.
+    """
     features = df.select_dtypes(include=[np.number]) 
     if features.empty:
         print("No Numerical columns found for Kmeans Clustering")
@@ -104,10 +180,30 @@ def perform_kmeans_clustering(df, filename, n_clusters=3):
     analysis_text = f"The KMeans clustering plot above shows the segmentation of the dataset into {n_clusters} clusters, based on the selected features: {', '.join(features.columns[:2])}. Each cluster, represented by a distinct color, groups similar data points together, highlighting underlying patterns in the dataset. The centroids of the clusters, located at the mean of the points, provide insight into the central tendencies of the data for each cluster."
 
 
-    return df, cluster_centers, analysis_text, img_made
+    return df, cluster_centers, analysis_text, img_made, count_images
 
-def histogram_generate(df, filename):
-    global count_images
+def histogram_generate(df:pd.DataFrame, count_images:int)->tuple:
+    """
+    Generates and saves a histogram (with optional KDE) for the best column in the DataFrame based on normality.
+
+    This function identifies the numerical columns in the given DataFrame, performs the Shapiro-Wilk test for normality 
+    on each numerical column, and selects the column with the highest p-value. If the p-value is greater than 0.05, 
+    it is considered normally distributed. Based on this, it determines if the selected column is discrete or continuous 
+    and generates a corresponding histogram. The plot is saved as an image with the column name as part of the filename.
+
+    Args:
+        df (pd.DataFrame): The input DataFrame containing numerical data to analyze.
+        count_images (int): A counter to track the number of saved images.
+
+    Returns:
+        str: The name of the column that was selected as the best for normal distribution.
+
+    Notes:
+        - The function uses the Shapiro-Wilk test to assess normality.
+        - It classifies columns with fewer than 10 unique values as discrete.
+        - The plot is saved as an image with a filename based on the column name.
+        - The function modifies the global variable `count_images` to track the number of saved images.
+    """
     # Identify numerical columns
     numeric_columns = df.select_dtypes(include=['number'])
     if numeric_columns.empty:
@@ -147,10 +243,30 @@ def histogram_generate(df, filename):
     plt.savefig(f"{'_'.join(best_column.split())}_distribution.png", dpi=300, bbox_inches="tight")
     plt.close()
     print("Saved Histogram", count_images)
-    return best_column
+    return best_column, count_images
 
-def plot_pie_chart_without_labels_for_small_categories(df, filename, column, threshold=5):
-    global count_images
+def plot_pie_chart_without_labels_for_small_categories(df:pd.DataFrame, count_images:int, column:str, threshold:int=5)->tuple:
+    """
+    Plots a pie chart of the distribution of a specified column, grouping small categories into an 'Other' category, 
+    and saves it as an image.
+
+    This function calculates the value counts and their percentages for the specified column in the DataFrame.
+    It combines categories that account for less than a specified threshold percentage (default 5%) into a single 'Other' category. 
+    The pie chart is generated and saved with the values displayed as percentages. Labels for the 'Other' category are hidden.
+
+    Args:
+        df (pd.DataFrame): The input DataFrame containing the data to analyze.
+        count_images (int): A counter to track the number of saved images.
+        column (str): The column name in the DataFrame whose distribution will be visualized.
+        threshold (float, optional): The percentage threshold for grouping small categories into the 'Other' category. Default is 5%.
+
+    Returns:
+        str: The name of the column used for the pie chart, to indicate which column was plotted.
+
+    Notes:
+        - The function filters categories based on their relative percentage and groups small categories (below the threshold) into an 'Other' category.
+        - The resulting pie chart is saved as a PNG image, and the global counter `count_images` is incremented.
+    """
     # Calculate the value counts and their percentages
     value_counts = df[column].value_counts()
     percentages = value_counts / value_counts.sum() * 100
@@ -186,9 +302,30 @@ def plot_pie_chart_without_labels_for_small_categories(df, filename, column, thr
     plt.close()
     count_images += 1
     print("Saved Pie Chart", count_images)
-    return column
+    return column, count_images
 
-def plot_categorical_pie_chart(df, filename, threshold=10):
+def plot_categorical_pie_chart(df:pd.DataFrame, count_images:int, threshold:int =10):
+    """
+    Generates pie charts for categorical columns in a DataFrame, where the number of unique values is below the specified threshold.
+    If a column has fewer unique values than the threshold, the pie chart is plotted using the 'Other' category for small categories.
+
+    The function iterates over all categorical columns in the DataFrame. For each column, if the number of unique values is less 
+    than the threshold, it calls the `plot_pie_chart_without_labels_for_small_categories` function to create a pie chart for that column.
+
+    Args:
+        df (pd.DataFrame): The input DataFrame containing the categorical data.
+        count_images (int): A counter to track the number of saved images.
+        threshold (int, optional): The maximum number of unique values for which a pie chart will be generated. Default is 10.
+
+    Returns:
+        None: The function does not return any value but saves the pie chart image(s) for the selected column(s).
+
+    Notes:
+        - The function checks for categorical columns in the DataFrame and generates pie charts for columns with fewer unique values than the threshold.
+        - If no categorical columns are found, a message will be printed.
+        - The function uses the `plot_pie_chart_without_labels_for_small_categories` function to generate the pie charts.
+    """
+
     # Select categorical columns
     categorical_columns = df.select_dtypes(include=['object', 'category'])
 
@@ -196,12 +333,11 @@ def plot_categorical_pie_chart(df, filename, threshold=10):
     for column in categorical_columns:
         # Check if the number of unique values is below the threshold
         if df[column].nunique() < threshold:
-            return plot_pie_chart_without_labels_for_small_categories(df,filename, column)
+            return plot_pie_chart_without_labels_for_small_categories(df,count_images, column)
             
     
     # if categorical_columns.empty:
     print("No Categorical Columns found for finding the Pie Chart")
-
 
 def get_narration(data_analysis, cluster_centers, corr, shape):
     """Use GPT-4o-mini to generate narration for the dataset."""
@@ -269,23 +405,17 @@ def get_narration(data_analysis, cluster_centers, corr, shape):
         print("Error generating narration:", e)
         return "Error in generating narration."
 
-def writeReadme(df, filename, data_analysis, corr, histogram_column, piechart_column, kmeans_image, narration):
-    global count_images
-    count_images = 0
-    with open ("README.md", 'w') as f:
-        lines_to_write = []
+def write_heading(filename: str) -> str:
+    """Generate the heading section for the README."""
+    return f"# '{filename}' Dataset Analysis\n"
 
-        # Heading of Readme.md
-        lines_to_write.append(f"# '{filename}' Dataset Analysis\n")
-        
-        
-        #Overview of Analysis
-        dataset_name = "".join(filename.split('.')[:-1])
+def write_overview(df: pd.DataFrame, filename: str, data_analysis: dict) -> str:
+    """Generate the overview section for the README."""
+    dataset_name = "".join(filename.split('.')[:-1])
+    columns = df.columns.tolist()
+    key_attributes = ", ".join(columns[:5])
 
-        columns = df.columns.tolist()
-        key_attributes = ", ".join(columns[:5])
-
-        overview = f"""
+    overview = f"""
 ## Overview
 
 The dataset used in this analysis is the **{dataset_name}**, which contains data on various attributes related to {dataset_name.lower()}. The primary goal of this analysis is to explore the relationships between different features, identify patterns in the data, and provide visualizations that illustrate the distribution of key variables.
@@ -294,65 +424,92 @@ The dataset includes information such as **{key_attributes}**, which are crucial
 
 This analysis will also provide insights into missing data, trends in the numerical and categorical features, and how different attributes relate to each other.
 """
+    return overview
 
-        lines_to_write.append(overview)
-        
-        
-        # Some basic statistics on dataset
-        lines_to_write.append("## Summary Statistics")
-        lines_to_write.append(f"- Number of Columns: {df.shape[1]}")
-        lines_to_write.append(f"- Number of Rows: {df.shape[0]}")
-        missing_col = []
-        for col in data_analysis['Missing']:
-            if data_analysis["Missing"][col] > 0:
-                missing_col.append(f"   - {col}: {data_analysis['Missing'][col]}")
-        if missing_col:
-            lines_to_write.append(f"- Number of Missing values in different Columns: ")
-            lines_to_write += missing_col
+def write_summary_statistics(df: pd.DataFrame, data_analysis: dict) -> str:
+    """Generate the summary statistics section for the README."""
+    lines = ["## Summary Statistics"]
+    lines.append(f"- Number of Columns: {df.shape[1]}")
+    lines.append(f"- Number of Rows: {df.shape[0]}")
+    
+    missing_col = []
+    for col in data_analysis['Missing']:
+        if data_analysis["Missing"][col] > 0:
+            missing_col.append(f"   - {col}: {data_analysis['Missing'][col]}")
+    
+    if missing_col:
+        lines.append(f"- Number of Missing values in different Columns: ")
+        lines += missing_col
+    
+    return "\n".join(lines)
 
-        # LLM Story or Narrative
-        lines_to_write.append("## Narrative of dataset: ")
-        lines_to_write.append(narration)
-        
-        #Visualisations and Their Breif description
-        lines_to_write.append("\n## Visualisations:")
+def write_narrative(narration: str) -> str:
+    """Generate the narrative section for the README."""
+    return f"## Narrative of dataset: \n{narration}"
 
-        # Correlation Heatmap
-        if corr:
-            make_corr_heatmap(df, filename)
-            lines_to_write.append("### Correlation Heatmap for the Numerical Data:")
-            lines_to_write.append("A correlation heatmap was generated to visualize the relationships between numerical features in the dataset.\n")
-            heatmap_path ="corr_heatmap.png"
-            lines_to_write.append(f"![Correlation HeatMap]({heatmap_path})")
-        
-        # Histogram
-        if histogram_column:
-            histogram_generate(df, filename)
-            lines_to_write.append(f"\n### Distribution for '{histogram_column}' Column of Dataset: \n")
-            dist_path = f"{'_'.join(histogram_column.split())}_distribution.png"
-            lines_to_write.append(f"![{histogram_column} distribution]({dist_path})")
-        
-        # Piechart
-        if piechart_column:
-            plot_categorical_pie_chart(df, filename)
-            lines_to_write.append(f"\n### Pie-Chart for '{piechart_column}' Column of Dataset: \n")
-            dist_path = f"{'_'.join(piechart_column.split())}_pie_chart.png"
-            lines_to_write.append(f"![{piechart_column} Pie Chart]({dist_path})")
+def write_visualizations(df: pd.DataFrame, filename: str, corr: dict, histogram_column: str, piechart_column: str, kmeans_image: bool) -> str:
+    """Generate the visualizations section for the README."""
+    lines = ["\n## Visualisations:"]
 
-        # Kmeans Cluster
-        if kmeans_image:
-            perform_kmeans_clustering(df, filename)
-            lines_to_write.append(f"\n### Kmeans cluster for Dataset:")
-            lines_to_write.append(analysis_text_kmeans+'\n')
-            dist_path = "Clusters.png"
-            lines_to_write.append(f"![Clusters png]({dist_path})")
-        lines_to_write.append("\n\n")
-        
+    # Correlation Heatmap
+    if corr:
+        lines.append("### Correlation Heatmap for the Numerical Data:")
+        lines.append("A correlation heatmap was generated to visualize the relationships between numerical features in the dataset.\n")
+        heatmap_path = "corr_heatmap.png"
+        lines.append(f"![Correlation HeatMap]({heatmap_path})")
+    
+    # Histogram
+    if histogram_column:
+        lines.append(f"\n### Distribution for '{histogram_column}' Column of Dataset: \n")
+        dist_path = f"{'_'.join(histogram_column.split())}_distribution.png"
+        lines.append(f"![{histogram_column} distribution]({dist_path})")
+    
+    # Piechart
+    if piechart_column:
+        lines.append(f"\n### Pie-Chart for '{piechart_column}' Column of Dataset: \n")
+        dist_path = f"{'_'.join(piechart_column.split())}_pie_chart.png"
+        lines.append(f"![{piechart_column} Pie Chart]({dist_path})")
 
-        # Finally writting to Readme
-        f.writelines([line + "\n" for line in lines_to_write])
-        print("Readme Made!")
+    # Kmeans Cluster
+    if kmeans_image:
+        lines.append(f"\n### Kmeans cluster for Dataset:")
+        lines.append(analysis_text_kmeans + '\n')
+        dist_path = "Clusters.png"
+        lines.append(f"![Clusters png]({dist_path})")
 
+    return "\n".join(lines)
+
+def write_conclusion() -> str:
+    """Generate the conclusion section for the README."""
+    conclusion = """
+## Conclusion
+
+In this analysis, we explored the dataset to uncover patterns and relationships between its attributes. Here are some key takeaways:
+1. The correlation heatmap revealed significant relationships between the numerical features, helping us identify potential areas for deeper analysis.
+2. The histogram analysis showed the distribution of data for the selected column, providing insights into its nature (whether it's discrete or continuous).
+3. The pie chart visualized the distribution of categorical values, making it easier to understand the prevalence of different categories.
+4. K-means clustering helped group similar data points, uncovering potential segments within the dataset.
+
+Overall, this analysis serves as a foundation for further exploration, predictive modeling, and decision-making.
+"""
+    return conclusion
+
+def write_readme(df: pd.DataFrame, filename: str, data_analysis: dict, corr: dict, histogram_column: str, piechart_column: str, kmeans_image: bool, narration: str) -> None:
+    """
+        Generate and write the complete README file.
+        It pieces together the narartion of the LLM with the indepth analysis made by script to write a indepth prooper analysis on the Dataset
+    """
+
+    with open("README.md", 'w') as f:
+        # Write each section using the helper functions
+        f.write(write_heading(filename))
+        f.write(write_overview(df, filename, data_analysis))
+        f.write(write_summary_statistics(df, data_analysis))
+        f.write(write_narrative(narration))
+        f.write(write_visualizations(df, filename, corr, histogram_column, piechart_column, kmeans_image))
+        f.write(write_conclusion())  # Add conclusion section
+    
+    print("Readme Made!")
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
@@ -360,7 +517,6 @@ if __name__ == "__main__":
         sys.exit(1)
 
     AIPROXY_TOKEN = check_ai_proxy_token()
-    count_images = 0
 
     filename = sys.argv[1]
 
@@ -376,19 +532,20 @@ if __name__ == "__main__":
     print("\nInitial setup complete. Ready for analysis!")
 
     # Basic Data analysis
-    data_analysis = explore_data_generic(df)
+    data_analysis = explore_data(df)
     
+    count_images = 0
+
     # Visulaisations
-    corr = make_corr_heatmap(df, filename)
+    corr = make_corr_heatmap(df, count_images)
 
-    histogram_column = histogram_generate(df,filename)
-    piechart_column = plot_categorical_pie_chart(df,filename)
+    histogram_column = histogram_generate(df, count_images)
+    piechart_column = plot_categorical_pie_chart(df, count_images)
 
-    df, cluster_centers, analysis_text_kmeans, kmeans_image = perform_kmeans_clustering(df,filename)
+    df, cluster_centers, analysis_text_kmeans, kmeans_image = perform_kmeans_clustering(df, count_images)
 
     # Narrations
     narration = get_narration(data_analysis, cluster_centers, corr, df.shape)
-    # narration = ""
 
-    writeReadme(df, filename, data_analysis, corr, histogram_column, piechart_column, kmeans_image, narration)
+    write_readme(df, filename, data_analysis, corr, histogram_column, piechart_column, kmeans_image, narration)
 
