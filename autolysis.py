@@ -66,7 +66,7 @@ def make_corr_heatmap(df, filename):
     plt.yticks(fontsize=10, rotation=0)     
     plt.title(f"Heatmap for {"".join(filename.split('.')[:-1])}")
     count_images += 1
-    plt.savefig(f"{"".join(filename.split('.')[:-1])}_corr_heatmap.png", dpi=300, bbox_inches="tight")
+    plt.savefig(path.join(os.getcwd(), f"{"".join(filename.split('.')[:-1])}_corr_heatmap.png"), dpi=300, bbox_inches="tight")
     print("Saved Correlation Heatmap", count_images)
 
     return corr.to_dict()
