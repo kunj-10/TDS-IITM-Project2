@@ -504,11 +504,17 @@ def write_readme(df: pd.DataFrame, filename: str, data_analysis: dict, corr: dic
     with open("README.md", 'w') as f:
         # Write each section using the helper functions
         f.write(write_heading(filename))
+        f.write('\n')
         f.write(write_overview(df, filename, data_analysis))
+        f.write('\n')
         f.write(write_summary_statistics(df, data_analysis))
+        f.write('\n')
         f.write(write_narrative(narration))
+        f.write('\n')
         f.write(write_visualizations(df, filename, corr, histogram_column, piechart_column, kmeans_image))
+        f.write('\n')
         f.write(write_conclusion())  # Add conclusion section
+        f.write('\n')
     
     print("Readme Made!")
 

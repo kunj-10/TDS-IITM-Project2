@@ -1,6 +1,5 @@
 # 'media.csv' Dataset Analysis
 
-
 ## Overview
 
 The dataset used in this analysis is the **media**, which contains data on various attributes related to media. The primary goal of this analysis is to explore the relationships between different features, identify patterns in the data, and provide visualizations that illustrate the distribution of key variables.
@@ -8,43 +7,50 @@ The dataset used in this analysis is the **media**, which contains data on vario
 The dataset includes information such as **date, language, type, title, by**, which are crucial for understanding trends and making data-driven decisions. This report highlights key statistical metrics and visual representations of the dataset, including distributions, correlations, and clustering results.
 
 This analysis will also provide insights into missing data, trends in the numerical and categorical features, and how different attributes relate to each other.
-
 ## Summary Statistics
 - Number of Columns: 9
 - Number of Rows: 2652
 - Number of Missing values in different Columns: 
    - date: 99
    - by: 262
+
 ## Narrative of dataset: 
-In analyzing the dataset, a rich tapestry of insights emerges from its structure and statistical properties.
+As a data scientist delving into this dataset, we first note its structureï¿½comprising 2652 rows and 9 columns with various data types. The majority of columns are categorical, including "date," "language," "type," "title," and "by," while three key numerical columns, "overall," "quality," and "repeatability," are essential for our analysis.
 
-### Key Patterns and Observations
-The dataset consists of 2652 entries with various attributes, primarily categorized into objects (character strings) and integers, capturing aspects like date, language, type, title, contributor, and three numerical metrics—overall, quality, and repeatability. Notably, the overall scores hover around a mean of 3.05, while the quality scores slightly exceed this at around 3.21. Both metrics show minimal variance with a standard deviation under one, suggesting a concentration of responses around the central values. The repeatability score, on the other hand, has a lower mean of 1.49 and a broader distribution, indicating less consistency in responses.
+### Key Patterns and Anomalies
+The statistical summary reveals intriguing patterns within the numerical columns. Both "overall" and "quality" ratings center around a mean of approximately 3, with the majority of values clustering around this meanï¿½evident from their 25th and 50th percentiles both being 3. Meanwhile, "repeatability" tends to be lower, with a mean of 1.49, indicating that many instances are rated at the lowest level. 
 
-### Missing Data Implications
-However, the dataset is not without its challenges—99 missing values in the ‘date’ column and a staggering 262 for the ‘by’ contributor column could skew results and affect the integrity of any analyses derived from it. These omissions must be addressed, possibly through imputation or exclusion, to prevent them from undermining the insights drawn from the remaining data.
+Notably, the standard deviation across these metrics suggests that while there is some variance, most reviews tend to fall within a narrow range. Particularly, the high maximum values of 5 in both "overall" and "quality" ratings, alongside consistently low "repeatability" scores, hint at potential bias or a common inclination toward better ratings.
 
-### Clustering and Correlation Insights
-The KMeans clustering analysis revealed three distinct centers for overall and quality scores, aligning with the preceding statistics. This clustering advocates that there are significant groups with different levels of satisfaction or evaluation within the dataset. The correlation heatmap further emphasizes strong positive relationships, notably between overall and quality scores (0.83), suggesting a reliable consistency in how items are rated across these dimensions. In contrast, repeatability shows a moderate correlation (0.51) with overall scores, hinting that while repeatability influences overall impressions, it is not overwhelmingly determinant.
+### Significance of Missing Data
+The presence of missing data, especially in the "date" and "by" columns (99 and 262 missing values, respectively), raises concern over the completeness of the dataset. The absence of these values could affect the integrity of our analysis, limit our ability to conduct temporal analyses based on ratings, and leave a significant portion of the "by" data unresolved. Addressing these gaps will be crucial before drawing further conclusions, as they could skew the insights derived from the dataset.
 
-### Dataset Size and Structure Observations
-With a dataset of 2652 rows and 9 columns, the dimensions are substantial enough to support robust statistical analyses and reveal meaningful patterns. The mix of qualitative and quantitative data positions this dataset as a well-rounded resource for exploration.
+### Insights from Clustering and Correlation Analysis
+Through clustering analysis using KMeans, we identify three distinct centers for "overall," "quality," and "repeatability" ratings. The positive correlationsï¿½especially the strong relationship (0.83) between "overall" and "quality"ï¿½underscore how an increase in perceived quality is often accompanied by favorable overall ratings. Conversely, the correlation between "overall" and "repeatability" (0.51) suggests there may be a moderate influence of how repeatable results are perceived on overall satisfaction.
 
-In summary, the dataset offers a rich narrative about user ratings, with meaningful insights into its structure, potential pitfalls due to missing data, and the strong interdependencies among key metrics that suggest a nuanced understanding of quality and repeatability affects overall evaluations.
+### Observations on Dataset Size and Structure
+With 2652 observations, this dataset offers a robust foundation for analysis, though the missing values signal an opportunity for refinement. The categorical fields enhance context, while the numerical metrics provide quantifiable insights. The datasetï¿½s shape allows for various analytical methods, including regression and machine learning models, to be employed effectively. 
 
+In summary, this dataset presents both challenges and opportunities. The patterns in numerical data, along with the clustering insights, pave the way for further explorationï¿½yet the missing values prompt a necessary examination that could impact our overall findings. A thoughtful approach will ensure we maximize the dataï¿½s potential while mitigating inherent limitations.
 ## Visualisations:
 ### Correlation Heatmap for the Numerical Data:
 A correlation heatmap was generated to visualize the relationships between numerical features in the dataset.
 
-![Correlation HeatMap](media_corr_heatmap.png)
+![Correlation HeatMap](corr_heatmap.png)
 
 ### Distribution for 'quality' Column of Dataset: 
 
-![quality distribution](media_quality_distribution.png)
+![quality distribution](quality_distribution.png)
 
 ### Pie-Chart for 'type' Column of Dataset: 
 
-![type Pie Chart](media_type_pie_chart.png)
+![type Pie Chart](type_pie_chart.png)
+## Conclusion
 
+In this analysis, we explored the dataset to uncover patterns and relationships between its attributes. Here are some key takeaways:
+1. The correlation heatmap revealed significant relationships between the numerical features, helping us identify potential areas for deeper analysis.
+2. The histogram analysis showed the distribution of data for the selected column, providing insights into its nature (whether it's discrete or continuous).
+3. The pie chart visualized the distribution of categorical values, making it easier to understand the prevalence of different categories.
+4. K-means clustering helped group similar data points, uncovering potential segments within the dataset.
 
-
+Overall, this analysis serves as a foundation for further exploration, predictive modeling, and decision-making.
