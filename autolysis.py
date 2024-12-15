@@ -546,8 +546,7 @@ if __name__ == "__main__":
     df, cluster_centers, analysis_text_kmeans, kmeans_image, count_images = perform_kmeans_clustering(df, count_images)
 
     # Narrations
-    # narration = get_narration(data_analysis, cluster_centers, corr, df.shape)
-    narration = ""
+    narration = get_narration(data_analysis, cluster_centers, corr, df.shape)
 
     write_readme(df, filename, data_analysis, corr, histogram_column, piechart_column, kmeans_image, narration)
 
