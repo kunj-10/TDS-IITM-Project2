@@ -54,7 +54,7 @@ def explore_data_generic(df):
     }
     return data_analysis
 
-def make_corr_heatmap(df):
+def make_corr_heatmap(df, filename):
     global count_images
     features = df.select_dtypes(include=[np.number]) 
     if features.empty:
@@ -71,7 +71,7 @@ def make_corr_heatmap(df):
 
     return corr.to_dict()
 
-def perform_kmeans_clustering(df, n_clusters=3):
+def perform_kmeans_clustering(df, filename, n_clusters=3):
     global count_images
     features = df.select_dtypes(include=[np.number]) 
     if features.empty:
@@ -103,7 +103,7 @@ def perform_kmeans_clustering(df, n_clusters=3):
 
     return df, cluster_centers, analysis_text, img_made
 
-def histogram_generate(df):
+def histogram_generate(df, filename):
     global count_images
     # Identify numerical columns
     numeric_columns = df.select_dtypes(include=['number'])
@@ -145,7 +145,7 @@ def histogram_generate(df):
     print("Saved Histogram", count_images)
     return best_column
 
-def plot_pie_chart_without_labels_for_small_categories(df, column, threshold=5):
+def plot_pie_chart_without_labels_for_small_categories(df, filename, column, threshold=5):
     global count_images
     # Calculate the value counts and their percentages
     value_counts = df[column].value_counts()
@@ -183,7 +183,7 @@ def plot_pie_chart_without_labels_for_small_categories(df, column, threshold=5):
     print("Saved Pie Chart", count_images)
     return column
 
-def plot_categorical_pie_chart(df, threshold=10):
+def plot_categorical_pie_chart(df, filename, threshold=10):
     # Select categorical columns
     categorical_columns = df.select_dtypes(include=['object', 'category'])
 
@@ -191,7 +191,7 @@ def plot_categorical_pie_chart(df, threshold=10):
     for column in categorical_columns:
         # Check if the number of unique values is below the threshold
         if df[column].nunique() < threshold:
-            return plot_pie_chart_without_labels_for_small_categories(df, column)
+            return plot_pie_chart_without_labels_for_small_categories(df,filename, column)
             
     
     # if categorical_columns.empty:
@@ -368,15 +368,15 @@ if __name__ == "__main__":
     data_analysis = explore_data_generic(df)
     
     # Visulaisations
-    corr = make_corr_heatmap(df)
+    corr = make_corr_heatmap(df, filename)
 
-    histogram_column = histogram_generate(df)
-    piechart_column = plot_categorical_pie_chart(df)
+    histogram_column = histogram_generate(df,filename)
+    piechart_column = plot_categorical_pie_chart(df,filename)
 
-    df, cluster_centers, analysis_text_kmeans, kmeans_image = perform_kmeans_clustering(df)
+    df, cluster_centers, analysis_text_kmeans, kmeans_image = perform_kmeans_clustering(df,filename)
 
     # Narrations
-    narration = get_narration(data_analysis, cluster_centers, corr, df.shape)
+    # narration = get_narration(data_analysis, cluster_centers, corr, df.shape)
 
     writeReadme(df, filename, data_analysis, corr, histogram_column, piechart_column, kmeans_image, narration)
 
