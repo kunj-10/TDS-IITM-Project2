@@ -322,21 +322,21 @@ This analysis will also provide insights into missing data, trends in the numeri
             make_corr_heatmap(df, filename)
             lines_to_write.append("### Correlation Heatmap for the Numerical Data:")
             lines_to_write.append("A correlation heatmap was generated to visualize the relationships between numerical features in the dataset.\n")
-            heatmap_path =f"{"".join(filename.split('.')[:-1])}_corr_heatmap.png"
+            heatmap_path ="corr_heatmap.png"
             lines_to_write.append(f"![Correlation HeatMap]({heatmap_path})")
         
         # Histogram
         if histogram_column:
             histogram_generate(df, filename)
             lines_to_write.append(f"\n### Distribution for '{histogram_column}' Column of Dataset: \n")
-            dist_path = f"{"".join(filename.split('.')[:-1])}_{'_'.join(histogram_column.split())}_distribution.png"
+            dist_path = f"{'_'.join(histogram_column.split())}_distribution.png"
             lines_to_write.append(f"![{histogram_column} distribution]({dist_path})")
         
         # Piechart
         if piechart_column:
             plot_categorical_pie_chart(df, filename)
             lines_to_write.append(f"\n### Pie-Chart for '{piechart_column}' Column of Dataset: \n")
-            dist_path = f"{"".join(filename.split('.')[:-1])}_{'_'.join(piechart_column.split())}_pie_chart.png"
+            dist_path = f"{'_'.join(piechart_column.split())}_pie_chart.png"
             lines_to_write.append(f"![{piechart_column} Pie Chart]({dist_path})")
 
         # Kmeans Cluster
@@ -344,7 +344,7 @@ This analysis will also provide insights into missing data, trends in the numeri
             perform_kmeans_clustering(df, filename)
             lines_to_write.append(f"\n### Kmeans cluster for Dataset:")
             lines_to_write.append(analysis_text_kmeans+'\n')
-            dist_path = f"{"".join(filename.split('.')[:-1])}_Clusters.png"
+            dist_path = "Clusters.png"
             lines_to_write.append(f"![Clusters png]({dist_path})")
         lines_to_write.append("\n\n")
         
