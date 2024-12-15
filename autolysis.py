@@ -67,7 +67,8 @@ def make_corr_heatmap(df, filename):
     plt.yticks(fontsize=10, rotation=0)     
     plt.title(f"Heatmap for {"".join(filename.split('.')[:-1])}")
     count_images += 1
-    plt.savefig(path.join(os.getcwd(), f"{"".join(filename.split('.')[:-1])}_corr_heatmap.png"), dpi=300, bbox_inches="tight")
+    plt.savefig(f"corr_heatmap.png", dpi=300, bbox_inches="tight")
+    plt.close()
     print("Saved Correlation Heatmap", count_images)
 
     return corr.to_dict()
@@ -266,6 +267,8 @@ def get_narration(data_analysis, cluster_centers, corr, shape):
         return "Error in generating narration."
 
 def writeReadme(df, filename, data_analysis, corr, histogram_column, piechart_column, kmeans_image, narration):
+    global count_images
+    count_images = 0
     with open ("README.md", 'w') as f:
         lines_to_write = []
 
