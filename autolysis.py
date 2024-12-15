@@ -8,7 +8,8 @@
 #   "matplotlib",
 #   "numpy",
 #   "scikit-learn",
-#   "charset_normalizer"
+#   "charset_normalizer",
+#   "requests"
 # ]
 # ///
 
@@ -24,6 +25,8 @@ from sklearn.impute import SimpleImputer
 from charset_normalizer import from_path
 from scipy.stats import skew, kurtosis, shapiro
 from os import path
+import requests
+
 
 
 def check_ai_proxy_token():
@@ -48,7 +51,6 @@ def explore_data_generic(df):
         "Columns and respective dtypes in dataset": df.dtypes.apply(str).to_dict(),
         "Mathematical Description done using pandas dataframe.describe(): ": df.describe().to_dict(),
         "Missing": df.isnull().sum().to_dict()
-        # "Missing values in each column in dataset": df.isnull().sum().to_dict()
     }
     return data_analysis
 
@@ -196,40 +198,73 @@ def plot_categorical_pie_chart(df, threshold=10):
     print("No Categorical Columns found for finding the Pie Chart")
 
 
+def get_narration(data_analysis, cluster_centers, corr, shape):
+    """Use GPT-4o-mini to generate narration for the dataset."""
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: uv run autolysis.py <dataset.csv>")
-        sys.exit(1)
+    prompt = f"""
+    You are a data scientist analyzing a dataset. Here is the context:
 
-    AIPROXY_TOKEN = check_ai_proxy_token()
-    count_images = 0
+    1. **Columns and Data Types**:
+       {data_analysis['Columns and respective dtypes in dataset']}
+    2. **Statistical Summary**:
+       Key statistics for numerical columns:
+       {data_analysis['Mathematical Description done using pandas dataframe.describe(): ']}
+    3. **Missing Values**:
+       {data_analysis['Missing']}
+    4. **KMeans Cluster Centers**:
+       {cluster_centers}
+    5. **Correlation Heatmap (top correlations)**:
+       {corr}
+    6. **Dataset Shape**:
+       {shape}
 
-    filename = sys.argv[1]
+    Write a concise, engaging narration that highlights:
+    - Key patterns or anomalies in the data types and statistics.
+    - The significance of missing data and its potential impact.
+    - Insights from clustering and correlation analysis.
+    - Observations about the dataset's size and structure.
+    """
 
-    # Load Data
+    headers = {
+        'Authorization': f'Bearer {AIPROXY_TOKEN}',
+        'Content-Type': 'application/json'
+    }
+
+    # Making the request to the AI Proxy endpoint
     try:
-        result = from_path(filename).best()
-        print(f"Detected encoding: {result.encoding}")
-        df = pd.read_csv(filename, encoding=result.encoding)
+        response = requests.post(
+            "https://aiproxy.sanand.workers.dev/openai/v1/chat/completions",
+            json={
+                "model": "gpt-4o-mini",
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": 600
+            },
+            headers=headers,
+        )
+
+        # Check for a successful response
+        if response.status_code == 200:
+            response_data = response.json()
+            narration = response_data['choices'][0]['message']['content'].strip()
+
+            # Get the monthly cost if available in the response
+            monthly_cost = response_data.get('usage', {}).get('monthlyCost', 'Not Available')
+            print(f"Monthly Credit Usage: {monthly_cost} USD")
+
+            # Ensure the cost is below 5.0 USD as per your requirement
+            if isinstance(monthly_cost, (int, float)) and monthly_cost >= 5.0:
+                print("Warning: Monthly cost exceeds the $5.00 limit.")
+
+            return narration
+        else:
+            print(f"Error: Received status code {response.status_code}")
+            return "Error in generating narration."
+
     except Exception as e:
-        print("Error reading the encoding trying with default utf-8")
-        df = pd.read_csv(filename)
+        print("Error generating narration:", e)
+        return "Error in generating narration."
 
-    print("\nInitial setup complete. Ready for analysis!")
-
-    # Basic Data analysis
-    data_analysis = explore_data_generic(df)
-    
-    corr = make_corr_heatmap(df)
-
-    histogram_column = histogram_generate(df)
-    piechart_column = plot_categorical_pie_chart(df)
-
-    df, cluster_centers, analysis_text_kmeans, kmeans_image = perform_kmeans_clustering(df)
-
-    # {"".join(filename.split('.')[:-1])}_{'_'.join(column.split())}_pie_chart.png"
-
+def writeReadme(df, filename, data_analysis, corr, histogram_column, piechart_column, kmeans_image, narration):
     with open ("README.md", 'w') as f:
         lines_to_write = []
 
@@ -270,6 +305,7 @@ This analysis will also provide insights into missing data, trends in the numeri
 
         # LLM Story or Narrative
         lines_to_write.append("## Narrative of dataset: ")
+        lines_to_write.append(narration)
         
         #Visualisations and Their Breif description
         lines_to_write.append("\n## Visualisations:")
@@ -307,5 +343,41 @@ This analysis will also provide insights into missing data, trends in the numeri
         print("Readme Made!")
 
 
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: uv run autolysis.py <dataset.csv>")
+        sys.exit(1)
+
+    AIPROXY_TOKEN = check_ai_proxy_token()
+    count_images = 0
+
+    filename = sys.argv[1]
+
+    # Load Data
+    try:
+        result = from_path(filename).best()
+        print(f"Detected encoding: {result.encoding}")
+        df = pd.read_csv(filename, encoding=result.encoding)
+    except Exception as e:
+        print("Error reading the encoding trying with default utf-8")
+        df = pd.read_csv(filename)
+
+    print("\nInitial setup complete. Ready for analysis!")
+
+    # Basic Data analysis
+    data_analysis = explore_data_generic(df)
+    
+    # Visulaisations
+    corr = make_corr_heatmap(df)
+
+    histogram_column = histogram_generate(df)
+    piechart_column = plot_categorical_pie_chart(df)
+
+    df, cluster_centers, analysis_text_kmeans, kmeans_image = perform_kmeans_clustering(df)
+
+    # Narrations
+    narration = get_narration(data_analysis, cluster_centers, corr, df.shape)
+
+    writeReadme(df, filename, data_analysis, corr, histogram_column, piechart_column, kmeans_image, narration)
 
 
