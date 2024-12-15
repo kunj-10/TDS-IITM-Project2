@@ -9,7 +9,8 @@
 #   "numpy",
 #   "scikit-learn",
 #   "charset_normalizer",
-#   "requests"
+#   "requests",
+#   "ipykernel"
 # ]
 # ///
 
