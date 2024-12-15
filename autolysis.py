@@ -95,7 +95,8 @@ def perform_kmeans_clustering(df, filename, n_clusters=3):
         plt.xlabel(features.columns[0])
         plt.ylabel(features.columns[1])
         plt.title('Clusters')
-        plt.savefig(f"{"".join(filename.split('.')[:-1])}_Clusters.png", dpi=300, bbox_inches="tight")
+        plt.savefig(f"Clusters.png", dpi=300, bbox_inches="tight")
+        plt.close()
         img_made = True
         count_images += 1   
         print("Saved Kmeans Cluster", count_images)
@@ -181,7 +182,8 @@ def plot_pie_chart_without_labels_for_small_categories(df, filename, column, thr
     # Add title and remove the y-label for cleaner chart
     plt.title(f'Distribution of {column}')
     plt.ylabel('')  # Hide the y-label for a cleaner pie chart
-    plt.savefig(f"{"".join(filename.split('.')[:-1])}_{'_'.join(column.split())}_pie_chart.png", dpi=300, bbox_inches="tight")
+    plt.savefig(f"{'_'.join(column.split())}_pie_chart.png", dpi=300, bbox_inches="tight")
+    plt.close()
     count_images += 1
     print("Saved Pie Chart", count_images)
     return column
