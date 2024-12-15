@@ -338,6 +338,7 @@ def plot_categorical_pie_chart(df:pd.DataFrame, count_images:int, threshold:int 
     
     # if categorical_columns.empty:
     print("No Categorical Columns found for finding the Pie Chart")
+    return (None, count_images)
 
 def get_narration(data_analysis, cluster_centers, corr, shape):
     """Use GPT-4o-mini to generate narration for the dataset."""
@@ -545,7 +546,8 @@ if __name__ == "__main__":
     df, cluster_centers, analysis_text_kmeans, kmeans_image, count_images = perform_kmeans_clustering(df, count_images)
 
     # Narrations
-    narration = get_narration(data_analysis, cluster_centers, corr, df.shape)
+    # narration = get_narration(data_analysis, cluster_centers, corr, df.shape)
+    narration = ""
 
     write_readme(df, filename, data_analysis, corr, histogram_column, piechart_column, kmeans_image, narration)
 
