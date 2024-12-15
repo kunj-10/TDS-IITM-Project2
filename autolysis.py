@@ -143,7 +143,8 @@ def histogram_generate(df, filename):
     plt.ylabel("Frequency")
     plt.grid(True)
     count_images += 1
-    plt.savefig(f"{"".join(filename.split('.')[:-1])}_{'_'.join(best_column.split())}_distribution.png", dpi=300, bbox_inches="tight")
+    plt.savefig(f"{'_'.join(best_column.split())}_distribution.png", dpi=300, bbox_inches="tight")
+    plt.close()
     print("Saved Histogram", count_images)
     return best_column
 
