@@ -537,12 +537,12 @@ if __name__ == "__main__":
     count_images = 0
 
     # Visulaisations
-    corr = make_corr_heatmap(df, count_images)
+    corr, count_images = make_corr_heatmap(df, count_images)
 
-    histogram_column = histogram_generate(df, count_images)
-    piechart_column = plot_categorical_pie_chart(df, count_images)
+    histogram_column, count_images = histogram_generate(df, count_images)
+    piechart_column, count_images = plot_categorical_pie_chart(df, count_images)
 
-    df, cluster_centers, analysis_text_kmeans, kmeans_image = perform_kmeans_clustering(df, count_images)
+    df, cluster_centers, analysis_text_kmeans, kmeans_image, count_images = perform_kmeans_clustering(df, count_images)
 
     # Narrations
     narration = get_narration(data_analysis, cluster_centers, corr, df.shape)
